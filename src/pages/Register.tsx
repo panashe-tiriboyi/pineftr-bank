@@ -1,21 +1,77 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const Register = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    // This will be integrated with Supabase in a future step
-    console.log('Registration attempt with:', { name, email, password });
+    
+    // Validation
+    if (password !== confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Passwords do not match",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (password.length < 6) {
+      toast({
+        title: "Error",
+        description: "Password must be at least 6 characters long",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Create new user in Supabase Auth
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: name
+          }
+        }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Success!",
+        description: "Account created successfully. You can now log in.",
+      });
+      
+      navigate('/login');
+    } catch (error: any) {
+      toast({
+        title: "Registration failed",
+        description: error.message || "An error occurred during registration",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -43,6 +99,7 @@ const Register = () => {
                   value={name} 
                   onChange={(e) => setName(e.target.value)}
                   required 
+                  disabled={loading}
                 />
               </div>
               
@@ -55,6 +112,7 @@ const Register = () => {
                   value={email} 
                   onChange={(e) => setEmail(e.target.value)}
                   required 
+                  disabled={loading}
                 />
               </div>
               
@@ -67,6 +125,7 @@ const Register = () => {
                   value={password} 
                   onChange={(e) => setPassword(e.target.value)}
                   required 
+                  disabled={loading}
                 />
               </div>
               
@@ -79,11 +138,16 @@ const Register = () => {
                   value={confirmPassword} 
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required 
+                  disabled={loading}
                 />
               </div>
               
-              <Button type="submit" className="w-full bg-teal-600 hover:bg-teal-700">
-                Create Account
+              <Button 
+                type="submit" 
+                className="w-full bg-teal-600 hover:bg-teal-700"
+                disabled={loading}
+              >
+                {loading ? "Creating Account..." : "Create Account"}
               </Button>
             </form>
           </CardContent>

@@ -1,21 +1,63 @@
 
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  
+  // Check if user is already logged in
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        navigate('/');
+      }
+    };
+    
+    checkSession();
+  }, [navigate]);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // This will be integrated with Supabase in a future step
-    console.log('Login attempt with:', { email, password, rememberMe });
+    setLoading(true);
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Success!",
+        description: "You have been logged in successfully.",
+      });
+      
+      navigate('/');
+    } catch (error: any) {
+      toast({
+        title: "Login failed",
+        description: error.message || "Invalid email or password",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -43,6 +85,7 @@ const Login = () => {
                   value={email} 
                   onChange={(e) => setEmail(e.target.value)}
                   required 
+                  disabled={loading}
                 />
               </div>
               <div className="space-y-2">
@@ -59,6 +102,7 @@ const Login = () => {
                   value={password} 
                   onChange={(e) => setPassword(e.target.value)}
                   required 
+                  disabled={loading}
                 />
               </div>
               
@@ -76,8 +120,12 @@ const Login = () => {
                 </Label>
               </div>
               
-              <Button type="submit" className="w-full bg-teal-600 hover:bg-teal-700">
-                Sign In
+              <Button 
+                type="submit" 
+                className="w-full bg-teal-600 hover:bg-teal-700"
+                disabled={loading}
+              >
+                {loading ? "Signing In..." : "Sign In"}
               </Button>
             </form>
           </CardContent>
