@@ -27,7 +27,7 @@ const Sidebar = () => {
     <aside className="w-64 bg-dashboardDark h-screen flex flex-col fixed left-0 top-0">
       <div className="p-6">
         <h1 className="text-white text-2xl font-bold">
-          FINE<span className="text-dashboardAccent">bank.IO</span>
+          Pine<span className="text-dashboardAccent">FtrBank</span>
         </h1>
       </div>
       
