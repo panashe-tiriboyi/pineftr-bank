@@ -1,8 +1,7 @@
-
-import React from 'react';
-import { useAuth } from '@/context/AuthContext';
-import { Button } from '@/components/ui/button';
-import { LogOut } from 'lucide-react';
+import React from "react";
+import { useAuth } from "@/context/AuthContext";
+import { Button } from "@/components/ui/button";
+import { LogOut } from "lucide-react";
 
 interface HeaderProps {
   title: string;
@@ -20,11 +19,11 @@ const Header: React.FC<HeaderProps> = ({ title, date }) => {
       </div>
       <div className="flex items-center gap-4">
         <div className="text-right">
-          <p className="font-medium">{profile?.full_name || 'User'}</p>
+          <p className="font-medium">{profile?.full_name || "User"}</p>
           <p className="text-sm text-gray-500">Welcome back</p>
         </div>
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           size="sm"
           onClick={signOut}
           className="hover:bg-gray-100"
