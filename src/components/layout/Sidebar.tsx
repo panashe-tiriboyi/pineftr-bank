@@ -10,8 +10,23 @@ import {
   Settings,
   LogOut,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom"; // For navigation after logout
+import { supabase } from "@/integrations/supabase/client"; // Adjust the import path to your Supabase client
 
 const Sidebar = () => {
+  const navigate = useNavigate();
+
+  // Logout function
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      // Redirect or update UI after logout
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
+  };
+
   const navItems = [
     { name: "Overview", path: "/", icon: <LayoutGrid className="w-5 h-5" /> },
     {
@@ -69,7 +84,10 @@ const Sidebar = () => {
       </nav>
 
       <div className="p-6">
-        <button className="flex items-center text-gray-300 hover:text-white transition-colors w-full">
+        <button
+          onClick={handleLogout}
+          className="flex items-center text-gray-300 hover:text-white transition-colors w-full"
+        >
           <LogOut className="w-5 h-5 mr-3" />
           <span>Logout</span>
         </button>
